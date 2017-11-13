@@ -1,9 +1,7 @@
 "use strict";
 var debug = require("debug");
-debug.enable('*');
 var util = require("util");
 var HAP = require("hap-nodejs");
-exports.HAPAccessory = HAP.Accessory;
 exports.HAPService = HAP.Service;
 exports.HAPCharacteristic = HAP.Characteristic;
 var THomeKitBridge = (function () {
@@ -22,7 +20,13 @@ var THomeKitBridge = (function () {
                     continue;
                 }
                 var hapDevice = this.createDevice(device);
-                this.bridgeObject.addBridgedAccessory(hapDevice);
+                try {
+                    this.bridgeObject.addBridgedAccessory(hapDevice);
+                }
+                catch (e) {
+                    this.FLogger.warn(e);
+                    this.FLogger.warn('Error by adding: ' + JSON.stringify(device));
+                }
             }
         this.bridgeObject.publish({
             username: this.config.username,

@@ -1,11 +1,11 @@
 /// <reference path="./typings/index.d.ts" />
 import debug = require('debug');
-debug.enable(<any>'*');
+//debug.enable(<any>'*');
 import util = require('util');
 import HAP = require('hap-nodejs');
 
 
-export let HAPAccessory:any = HAP.Accessory;
+// export let HAPAccessory:any = HAP.Accessory;
 export let HAPService:any = HAP.Service;
 export let HAPCharacteristic:any = HAP.Characteristic;
 
@@ -102,7 +102,12 @@ export class THomeKitBridge {
                     continue;
                 }
                 let hapDevice = this.createDevice(device);
-                this.bridgeObject.addBridgedAccessory(hapDevice);
+                try {
+                    this.bridgeObject.addBridgedAccessory(hapDevice);
+                } catch (e) {
+                    this.FLogger.warn(e);
+                    this.FLogger.warn('Error by adding: ' + JSON.stringify(device));
+                }
             }
 
         this.bridgeObject.publish({
@@ -130,7 +135,7 @@ export class THomeKitBridge {
     }
 
     private createDevice(device:Configuration.IDeviceConfig) {
-        let deviceID = HAP.uuid.generate(this.config.ident + ':' + device.name)
+        let deviceID = HAP.uuid.generate(this.config.ident + ':' + device.name);
         let hapDevice:any = new HAP.Accessory(device.name, deviceID);
 
 

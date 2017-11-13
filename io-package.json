@@ -26,7 +26,7 @@
         ],
         "readme": "https://github.com/jensweigele/ioBroker.yahka/blob/master/README.md",
         "loglevel": "info",
-        "type": "common adapters",
+        "type": "iot-systems",
         "config":{
             "minWidth": 800,
             "width ": 1440,
@@ -52,7 +52,7 @@
             "_id": "yahka.meta._conversionFunctions",
             "type": "meta",
             "common": {},
-            "native": ["", "passthrough", "HomematicDirectionToHomekitPositionState", "HomematicControlModeToHomekitHeathingCoolingState"]
+            "native": ["", "hue", "level255", "passthrough", "HomematicDirectionToHomekitPositionState", "HomematicControlModeToHomekitHeathingCoolingState"]
         },
         {
             "_id": "yahka.meta._accessoryCategories",
