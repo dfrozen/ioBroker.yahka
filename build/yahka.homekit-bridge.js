@@ -1,5 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var debug = require("debug");
+debug.enable('*');
 var util = require("util");
 var HAP = require("hap-nodejs");
 exports.HAPService = HAP.Service;
@@ -50,8 +52,15 @@ var THomeKitBridge = (function () {
     };
     THomeKitBridge.prototype.createDevice = function (device) {
         var _this = this;
-        var deviceID = HAP.uuid.generate(this.config.ident + ':' + device.name);
-        var hapDevice = new HAP.Accessory(device.name, deviceID);
+        var devName = device.name;
+        var deviceID = HAP.uuid.generate(this.config.ident + ':' + devName);
+        var i = 0;
+        while (this.bridgeObject.bridgedAccessories.some(function (a) { return a.UUID == deviceID; })) {
+            devName = device.name + '_' + ++i;
+            deviceID = HAP.uuid.generate(this.config.ident + ':' + devName);
+        }
+        this.FLogger.info('adding ' + devName + ' with UUID: ' + deviceID);
+        var hapDevice = new HAP.Accessory(devName, deviceID);
         hapDevice.getService(exports.HAPService.AccessoryInformation)
             .setCharacteristic(exports.HAPCharacteristic.Manufacturer, device.manufacturer || 'not configured')
             .setCharacteristic(exports.HAPCharacteristic.Model, device.model || 'not configured')
@@ -72,7 +81,7 @@ var THomeKitBridge = (function () {
         }
         var isNew = false;
         var hapService = hapDevice.getService(HAP.Service[serviceConfig.type]);
-        if (hapService !== undefined && hapService.subType !== serviceConfig.subType) {
+        if (hapService !== undefined && hapService.subtype !== serviceConfig.subType) {
             hapService = undefined;
         }
         if (hapService === undefined) {
@@ -82,6 +91,10 @@ var THomeKitBridge = (function () {
         for (var _i = 0, _a = serviceConfig.characteristics; _i < _a.length; _i++) {
             var charactConfig = _a[_i];
             this.initCharacteristic(hapService, charactConfig);
+        }
+        var curTempCharacetristic = hapService.getCharacteristic('Current Temperature');
+        if (curTempCharacetristic !== undefined) {
+            curTempCharacetristic.props.minValue = -99;
         }
         if (isNew) {
             hapDevice.addService(hapService);

@@ -8,66 +8,48 @@
 
 ***This adapter needs at least nodejs 4.x***
 
-## Installation
-Sometimes additonal libriaries are required:
+## Installation and Usage
 
-```
-sudo apt-get install libavahi-compat-libdnssd-dev
-```
-if you have error :
-```
-Error:	2016-07-26 18:57:17.989	error	at Error (native)
-Error:	2016-07-26 18:57:17.989	error	dns service error: unknown
-uncaught	2016-07-26 18:57:17.985	error	exception: dns service error: unknown
-```
-install avahi-daemon
-```
-sudo apt-get install avahi-daemon -y
-```
-and edit avahi-daemon.conf 
-```
-sudo nano avahi-daemon.conf 
-```
-set:
-```
-host-name=orangepi2plus
-domain-name=local
-use-ipv4=yes
-use-ipv6=yes
-enable-dbus=yes
-```
-## Usage
-
-What is???:
-- ioBroker.State.Defered
-- ioBroker.State.OnlyACK
-- ioBroker.homematic.WindowCovering.TargetPosition
-
-- passthrough
-- HomematicDirectionToHomekitPositionState
-- HomematicControlModeToHomekitHeathingCoolingState
+For details on how to install and configure this adapter, please see the [Wiki](https://github.com/jensweigele/ioBroker.yahka/wiki)
 
 ## Changelog
 
-### 0.5.5 (2017.05.04)
-  (bluefox) allow select ID in configuration dialog
+### 0.7.0 
+  (bluefox) Fixed the ID select dialog in Admin3<br>
+  (jw) updated hap-nodejs to support the following new services: Faucet, IrrigationSystem and Valve<br>
+  (jw) added ip-package to dependencies to avoid errors on some installations<br>
+
+### 0.6.1 
+  (jw) fixed startup crash<br>
+
+### 0.6.0
+  (jw) add support for IP-Cameras<br>
+  (jw) included iOS 11 device definitions<br>
+  (jw) allowed negative temperatures for temperature sensors<br>
+  (jw) fixed crashes due to duplicate device names<br>
+  (oliverschulze) added conversion functions "hue" and "level255"<br>
+  (jw) added conversion functions scaleInt, scaleFloat and inverse<br>
+  (jw) devices are now sorted by name in the admin panel<br>
+
+### 0.5.5
+  (bluefox) allow select ID in configuration dialog<br>
 
 ### 0.5.4
-  (jw) improve logoutput
-  (jw) added HomematicControlModeToHomekitHeathingCoolingState mapping
+  (jw) improve logoutput<br>
+  (jw) added HomematicControlModeToHomekitHeathingCoolingState mapping<br>
 
 ### 0.5.3
-  (jw) internal release
+  (jw) internal release<br>
 
 ### 0.5.2
-  (jw) fixed issues with empty characteristic values
-  (jw) fixed issue with empty adapter.systemConfig.system object
+  (jw) fixed issues with empty characteristic values<br>
+  (jw) fixed issue with empty adapter.systemConfig.system object<br>
 
 ### 0.5.1
-  (jw) fixed issue with wrongly displayed logo
+  (jw) fixed issue with wrongly displayed logo<br>
 
 ### 0.5.0
-  (jw) initial release
+  (jw) initial release<br>
 
 ## License
 The MIT License (MIT)

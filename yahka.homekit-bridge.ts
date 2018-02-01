@@ -1,59 +1,18 @@
 /// <reference path="./typings/index.d.ts" />
 import debug = require('debug');
-//debug.enable(<any>'*');
+debug.enable(<any>'*');
 import util = require('util');
 import HAP = require('hap-nodejs');
+import { Configuration } from './yahka.configuration';
 
 
 // export let HAPAccessory:any = HAP.Accessory;
-export let HAPService:any = HAP.Service;
-export let HAPCharacteristic:any = HAP.Characteristic;
+export let HAPService = HAP.Service;
+export let HAPCharacteristic = HAP.Characteristic;
 
 type IHAPService = any;
 
 // type IHAPCharacteristic = any;
-
-export module Configuration {
-
-    export interface ICharacteristicConfig {
-        name:string;
-        enabled:boolean;
-        [key:string]:any;
-    }
-
-    export interface IServiceConfig {
-        name:string;
-        type:string;
-        subType:string;
-        characteristics:(ICharacteristicConfig)[];
-        [key:string]:any;
-    }
-
-    export interface IDeviceConfig {
-        name:string;
-        manufacturer:string;
-        model:string;
-        enabled:boolean;
-        serial:string;
-        category:number;
-        services:(IServiceConfig)[];
-        [key:string]:any;
-    }
-
-    export interface IBridgeConfig {
-        ident:string;
-        name:string;
-        manufacturer:string;
-        model:string;
-        serial:string;
-        username:string;
-        pincode:string;
-        port:number;
-        verboseLogging:boolean;
-        devices:(IDeviceConfig)[];
-        [key:string]:any;
-    }
-}
 
 export interface IConversionFunction {
     toHomeKit(value:any):any;
@@ -119,8 +78,8 @@ export class THomeKitBridge {
     }
 
     private setupBridge() {
-        let hapBridge:any = new HAP.Bridge(this.config.name, HAP.uuid.generate(this.config.ident));
-
+        let hapBridge: HAPNodeJS.Accessory = new (<any>HAP).Bridge(this.config.name, HAP.uuid.generate(this.config.ident));
+        
         hapBridge.getService(HAPService.AccessoryInformation)
             .setCharacteristic(HAPCharacteristic.Manufacturer, this.config.manufacturer || "not configured")
             .setCharacteristic(HAPCharacteristic.Model, this.config.model || "not configured")
@@ -135,8 +94,16 @@ export class THomeKitBridge {
     }
 
     private createDevice(device:Configuration.IDeviceConfig) {
-        let deviceID = HAP.uuid.generate(this.config.ident + ':' + device.name);
-        let hapDevice:any = new HAP.Accessory(device.name, deviceID);
+        let devName = device.name;
+        let deviceID = HAP.uuid.generate(this.config.ident + ':' + devName);
+        let i = 0;
+        while (this.bridgeObject.bridgedAccessories.some((a) => a.UUID == deviceID)) {
+            devName = device.name + '_' + ++i;
+            deviceID = HAP.uuid.generate(this.config.ident + ':' + devName);
+        }
+
+        this.FLogger.info('adding ' + devName + ' with UUID: ' + deviceID);
+        let hapDevice = new HAP.Accessory(devName, deviceID);
 
 
         hapDevice.getService(HAPService.AccessoryInformation)
@@ -161,7 +128,7 @@ export class THomeKitBridge {
 
         let isNew = false;
         let hapService = hapDevice.getService(HAP.Service[serviceConfig.type]);
-        if (hapService !== undefined && hapService.subType !== serviceConfig.subType) {
+        if (hapService !== undefined && hapService.subtype !== serviceConfig.subType) {
             hapService = undefined;
         }
 
@@ -173,6 +140,14 @@ export class THomeKitBridge {
         for (let charactConfig of serviceConfig.characteristics) {
             this.initCharacteristic(hapService, charactConfig);
         }
+
+        
+        // fix for wrong min Temperature Value in HAPNode
+        let curTempCharacetristic = hapService.getCharacteristic('Current Temperature');
+        if (curTempCharacetristic !== undefined) {
+            curTempCharacetristic.props.minValue = -99
+        }
+
 
         if (isNew) {
             hapDevice.addService(hapService);

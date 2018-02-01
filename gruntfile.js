@@ -38,12 +38,16 @@ module.exports = function(grunt) {
 
         exec: {
             refreshIOBroker: {
-                cwd: '../../',
+                cwd: '../iobroker/',
                 command: 'iobroker.bat upload yahka'
             },
             NPMPublish: {
                 cwd: 'build',
                 command: 'npm publish'
+            },
+            NPMBeta: {
+                cwd: 'build',
+                command: 'npm publish --tag beta'
             }
         }
     });
@@ -88,5 +92,14 @@ module.exports = function(grunt) {
         'replace',
         'copy:build',
         'exec:NPMPublish'        
+    ])
+
+    grunt.registerTask('NPMBeta', [
+        'clean:build',
+        'ts:build',
+        'clean:ts_nodeModules',
+        'replace',
+        'copy:build',
+        'exec:NPMBeta'        
     ])
 };

@@ -51,10 +51,19 @@ class TIoBrokerInOutFunction_State implements IInternalInOutFunction {
 
     toIOBroker(plainIoValue, callback) {
         this.adapter.log.debug('writing state to ioBroker [' + this.stateName + ']: ' + JSON.stringify(plainIoValue));
-        this.adapter.setForeignState(this.stateName, plainIoValue, false, (error) => {
-            if (error)
-                this.adapter.log.error('setForeignState error [' + this.stateName + '] to [' + JSON.stringify(plainIoValue) + ']: ' + error);
-            callback();
+        this.adapter.getForeignState(this.stateName, (error, ioState) =>  {
+            let value = this.getValueOnRead(ioState);
+            let valueChanged = value !== plainIoValue;
+            this.adapter.log.debug('checking value change: ' + JSON.stringify(value) + ' != ' + JSON.stringify(plainIoValue) + ' = ' + valueChanged);
+            if (valueChanged) {
+                this.adapter.setForeignState(this.stateName, plainIoValue, false, (error) => {
+                    if (error)
+                        this.adapter.log.error('setForeignState error [' + this.stateName + '] to [' + JSON.stringify(plainIoValue) + ']: ' + error);
+                    callback();
+                });
+            } else {
+                callback();
+            }
         });
     }
 
@@ -410,6 +419,166 @@ var conversionFactory:IObjectDictionary<TConversionFunctionCreateFunction> = {
                 return result;
             }
         }
+    },
+
+    "level255": function (adapter:ioBroker.IAdapter, parameters:any):IConversionFunction {
+        return {
+            toHomeKit: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;        
+                let newValue = Math.round((num / 255.0) * 100.0);
+                adapter.log.debug('level255: converting value to homekit: ' + value + ' to ' + newValue); 
+                return newValue; 
+			},
+            toIOBroker: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;                     
+                var newValue = Math.round((num / 100.0) * 255.0);
+                adapter.log.debug('level255: converting value to ioBroker: ' + value + ' to ' + newValue); 
+                return newValue; 
+            }
+        };
+    },
+
+    "scaleInt": function (adapter:ioBroker.IAdapter, parameters:any):IConversionFunction {
+        var paramArray = JSON.parse(parameters);
+        function getParameter(name: string): number {
+            if (paramArray === undefined) 
+                return undefined;
+            let value = paramArray[name];
+            if (value === undefined) 
+                return undefined;
+            if (typeof value === 'number')
+                return value;
+            else 
+                return parseInt(value); 
+        }
+
+        return {
+            toHomeKit: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;
+                let homeKitMax = getParameter("homekit.max");
+                let ioBrokerMax = getParameter("iobroker.max");
+                let newValue = Math.round((num / ioBrokerMax) * homeKitMax);
+                adapter.log.debug('scaleInt: converting value to homekit: ' + value + ' to ' + newValue); 
+                return newValue; 
+			},
+            toIOBroker: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;
+                let homeKitMax = getParameter("homekit.max");
+                let ioBrokerMax = getParameter("iobroker.max");
+                let newValue = Math.round((num / homeKitMax) * ioBrokerMax);
+                adapter.log.debug('scaleInt: converting value to ioBroker: ' + value + ' to ' + newValue); 
+                return newValue; 
+            }
+        };
+    },    
+    "scaleFloat": function (adapter:ioBroker.IAdapter, parameters:any):IConversionFunction {
+        var paramArray = JSON.parse(parameters);
+        function getParameter(name: string): number {
+            if (paramArray === undefined) 
+                return undefined;
+            let value = paramArray[name];
+            if (value === undefined) 
+                return undefined;
+            if (typeof value === 'number')
+                return value;
+            else 
+                return parseFloat(value); 
+        }
+
+        return {
+            toHomeKit: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseFloat(value);
+                else
+                    num = value;
+                let homeKitMax = getParameter("homekit.max");
+                let ioBrokerMax = getParameter("iobroker.max");
+                let newValue = (num / ioBrokerMax) * homeKitMax;
+                adapter.log.debug('scaleFloat: converting value to homekit: ' + value + ' to ' + newValue); 
+                return newValue; 
+			},
+            toIOBroker: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseFloat(value);
+                else
+                    num = value;
+                let homeKitMax = getParameter("homekit.max");
+                let ioBrokerMax = getParameter("iobroker.max");
+                let newValue = (num / homeKitMax) * ioBrokerMax;
+                adapter.log.debug('scaleFloat: converting value to ioBroker: ' + value + ' to ' + newValue); 
+                return newValue; 
+            }
+        };
+    },    
+    "inverse": function (adapter:ioBroker.IAdapter, parameters:any):IConversionFunction {
+        function castToNumber(value: any): number {
+            if (value === undefined)
+                return undefined;
+            if (typeof value !== 'number')
+                return parseFloat(value);
+            else
+                return value;
+        }
+
+        return {
+            toHomeKit: function (value) { 
+                let num: number = castToNumber(value)
+                let maxValue = castToNumber(parameters);
+                let newValue = maxValue - num;
+                adapter.log.debug('inverse: converting value to homekit: ' + value + ' to ' + newValue); 
+                return newValue; 
+			},
+            toIOBroker: function (value) { 
+                let num: number = castToNumber(value)
+                let maxValue = castToNumber(parameters);
+                let newValue = maxValue - num;
+                adapter.log.debug('inverse: converting value to ioBroker: ' + value + ' to ' + newValue); 
+                return newValue; 
+            }
+        };
+    },    
+
+    "hue": function (adapter:ioBroker.IAdapter, parameters:any):IConversionFunction {
+        return {
+            toHomeKit: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;                     
+                var newValue = Math.round((num / 65535.0) * 360.0);
+                adapter.log.debug('hue: converting value to homekit: ' + value + ' to ' + newValue); 
+                return newValue; 
+            },
+            toIOBroker: function (value) { 
+                let num: number = undefined;
+                if (typeof value !== 'number')
+                    num = parseInt(value);
+                else
+                    num = value;     
+                var newValue = Math.round((num / 360.0) * 65535.0);
+                adapter.log.debug('hue: converting value to ioBroker: ' + value + ' to ' + newValue); 
+                return newValue; 
+            }
+        };
     }
 };
 

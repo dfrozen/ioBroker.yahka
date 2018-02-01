@@ -3,9 +3,6 @@ var appName;
 
 function getAppName() {
     var parts = __dirname.replace(/\\/g, '/').split('/');
-    if (parts[parts.length - 2] === 'build') {
-        return parts[parts.length - 3].split('.')[0];
-    }
     return parts[parts.length - 2].split('.')[0];
 }
 
@@ -13,38 +10,34 @@ function getAppName() {
 function getControllerDir(isInstall) {
     var fs = require('fs');
     // Find the js-controller location
-    // tslint:disable-next-line:no-shadowed-variable
-    var controllerDir = __dirname.replace(/\\/g, "/");
-    controllerDir = controllerDir.split("/");
-    if (controllerDir[controllerDir.length - 4] === "adapter") {
-        controllerDir.splice(controllerDir.length - 4, 4);
-        controllerDir = controllerDir.join("/");
-    }
-    else if (controllerDir[controllerDir.length - 4] === "node_modules") {
-        controllerDir.splice(controllerDir.length - 4, 4);
-        controllerDir = controllerDir.join("/");
-        if (fs.existsSync(controllerDir + "/node_modules/iobroker.js-controller")) {
-            controllerDir += "/node_modules/iobroker.js-controller";
-        }
-        else if (fs.existsSync(controllerDir + "/node_modules/ioBroker.js-controller")) {
-            controllerDir += "/node_modules/ioBroker.js-controller";
-        }
-        else if (!fs.existsSync(controllerDir + "/controller.js")) {
+    var controllerDir = __dirname.replace(/\\/g, '/');
+    controllerDir = controllerDir.split('/');
+    if (controllerDir[controllerDir.length - 3] === 'adapter') {
+        controllerDir.splice(controllerDir.length - 3, 3);
+        controllerDir = controllerDir.join('/');
+    } else if (controllerDir[controllerDir.length - 3] === 'node_modules') {
+        controllerDir.splice(controllerDir.length - 3, 3);
+        controllerDir = controllerDir.join('/');
+        if (fs.existsSync(controllerDir + '/node_modules/' + appName + '.js-controller')) {
+            controllerDir += '/node_modules/' + appName + '.js-controller';
+        } else if (fs.existsSync(controllerDir + '/node_modules/' + appName.toLowerCase() + '.js-controller')) {
+            controllerDir += '/node_modules/' + appName.toLowerCase() + '.js-controller';
+        } else if (!fs.existsSync(controllerDir + '/controller.js')) {
             if (!isInstall) {
-                console.log("Cannot find js-controller");
+                console.log('Cannot find js-controller');
                 process.exit(10);
-            }
-            else {
+            } else {
                 process.exit();
             }
         }
-    }
-    else {
+    } else if (fs.existsSync(__dirname + '/../../node_modules/' + appName.toLowerCase() + '.js-controller')) {
+        controllerDir.splice(controllerDir.length - 2, 2);
+        return controllerDir.join('/') + '/node_modules/' + appName.toLowerCase() + '.js-controller';
+    } else {
         if (!isInstall) {
-            console.log("Cannot find js-controller");
+            console.log('Cannot find js-controller');
             process.exit(10);
-        }
-        else {
+        } else {
             process.exit();
         }
     }
@@ -53,6 +46,7 @@ function getControllerDir(isInstall) {
 
 // Read controller configuration file
 function getConfig() {
+    var fs = require('fs');
     if (fs.existsSync(controllerDir + '/conf/' + appName + '.json')) {
         return JSON.parse(fs.readFileSync(controllerDir + '/conf/' + appName + '.json'));
     } else if (fs.existsSync(controllerDir + '/conf/' + appName.toLowerCase() + '.json')) {
@@ -66,5 +60,5 @@ controllerDir = getControllerDir(typeof process !== 'undefined' && process.argv 
 
 exports.controllerDir = controllerDir;
 exports.getConfig =     getConfig;
-exports.adapter =       require(controllerDir + '/lib/adapter.js');
+exports.Adapter =       require(controllerDir + '/lib/adapter.js');
 exports.appName =       appName;
