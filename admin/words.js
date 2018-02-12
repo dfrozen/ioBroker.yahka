@@ -10,6 +10,7 @@ systemDictionary = {
         "ru": "Нижеприведенная страница используется для присвоения состояний ioBroker характеристикам HomeKit."
     },
     "Bridge Properties":    {"en": "Bridge Properties",     "de": "Bridge-Eigenschaften",   "ru": "Свойства хаба"},
+    "Bridge name:":         {"en": "Bridge name:",          "de": "Bridge-Name:",           "ru": "Название хаба:"},
     "Manufacturer:":        {"en": "Manufacturer:",         "de": "Hersteller:",            "ru": "Производитель:"},
     "Model:":               {"en": "Model:",                "de": "Modell:",                "ru": "Модель:"},
     "Serial:":              {"en": "Serial:",               "de": "Serial:",                "ru": "Номер:"},
@@ -20,8 +21,8 @@ systemDictionary = {
     "Add Device":           {"en": "Add Device",            "de": "Gerät hinzufügen",       "ru": "Добавить устройство"},
     "Remove Device":        {"en": "Remove Device",         "de": "Gerät entfernen",        "ru": "Удалить устройство"},
     "Add Service":          {"en": "Add Service",           "de": "Service hinzufügen",     "ru": "Добавить сервис"},
-    "Device Properties":    {"en": "Device Properties",     "de": "Geräteeigenschaften",    "ru": "Свойства устройства"},
-    "Name:":                {"en": "Name:",                 "de": "Name:",                  "ru": "Имя устройства:"},
+    "Device Properties":    {"en": "Device Properties",     "de": "Geräteeigenschaften",    "ru": "Device Properties"},
+    "Device name:":         {"en": "Device name:",          "de": "Gerätename:",            "ru": "Имя устройства:"},
     "Categeory:":           {"en": "Categeory:",            "de": "Kategorie:",             "ru": "Категория:"},
     "Service: ":            {"en": "Service: ",             "de": "Bedienung: ",            "ru": "Обслуживание: "},
     "Service name:":        {"en": "Service name:",         "de": "Dienstname:",            "ru": "Наименование услуги:"},
@@ -57,7 +58,7 @@ systemDictionary = {
     },
     "needs to be in form of a mac address, e.g: d8:be:54:e7:06:f8. <b>After changing this field, the bridge needs to be reconfigured in the HomeKit database</b>": {
         "en": "needs to be in form of a mac address, e.g: d8:be:54:e7:06:f8. <b>After changing this field, the bridge needs to be reconfigured in the HomeKit database</b>",
-        "de": "Muss in Form einer Mac-Adresse sein, z. B.: d8:be:54:e7:06:f8. <b> Nach dem Ändern dieses Feldes müssen alle Geräte in der HomeKit-Datenbank </b> rekonfiguriert werden",
+        "de": "Muss in Form einer Mac-Adresse sein, z. B.: d8:be:54:e7:06:f8. <b> Nach dem Ändern dieses Feldes muss die Brücke in der HomeKit-Datenbank </b> rekonfiguriert werden",
         "ru": "Должен быть в виде MAC-адреса, например: d8:be:54:e7:06:f8. <b>После изменения этого поля, хаб необходимо переконфигурировать в базе данных HomeKit </b>"
     },
     "needs to be in the form of 123-45-678": {
@@ -90,26 +91,5 @@ systemDictionary = {
     "id":                   {"en": "ID",                    "de": "ID",                     "ru": "ID"},
     "Select all":           {"en": "Select all",            "de": "Alle auswählen",         "ru": "Выбрать все видимые"},
     "Deselect all":         {"en": "Deselect all",          "de": "Auswahl aufheben",       "ru": "Убрать выделение"},
-    "Invert selection":     {"en": "Invert selection",      "de": "Selektierung invertieren", "ru": "Инвертировать выделение"},
-
-    "Add Camera": {"en": "Add Camera", "de": "Kamera hinzufügen", "ru": "Добавить камеру"},
-    "Basic Properties": {"en": "Basic Properties", "de": "Allgemein", "ru": "Основные свойства"},
-    "Device name:": {"en": "Device name:", "de": "Gerätename:", "ru": "Имя устройства:"},
-    "needs to be in form of a mac address, e.g: d8:be:54:e7:06:f8. <b>After changing this field, the camera needs to be reconfigured in the HomeKit database</b>": {
-        "en": "needs to be in form of a mac address, e.g: d8:be:54:e7:06:f8. <b>After changing this field, the camera needs to be reconfigured in the HomeKit database</b>", 
-        "de": "Muss in Form einer Mac-Adresse sein, z. B.: d8:be:54:e7:06:f8. <b> Nach dem Ändern dieses Feldes muss die Kamera Geräte in der HomeKit-Datenbank </b> rekonfiguriert werden",
-        "ru": "Должен быть в виде MAC-адреса, например: d8:be:54:e7:06:f8. <b>After changing this field, the camera needs to be reconfigured in the HomeKit database</b>"},
-    "Stream Properties": {"en": "Stream Properties", "de": "Stream Eingeschaften", "ru": "Свойства потока"},
-    "Source:": {"en": "Source:", "de": "Quelle:", "ru": "Источник:"},
-    "Codec:": {"en": "Codec:", "de": "Codec:", "ru": "Кодек:"},
-    "Number of Streams:": {"en": "Number of Streams:", "de": "Anzahl der Streams:", "ru": "Новер потока:"},
-    "maxWidth:": {"en": "max. Width:", "de": "max Breite:", "ru": "макс. Ширина:"},
-    "maxHeight:": {"en": "max. Height:", "de": "max. Höhe:", "ru": "макс. Высота:"},
-    "maxFPS:": {"en": "max. FPS:", "de": "max. FPS:", "ru": "max. FPS:"},
-    "Advanced Settings": {"en": "Advanced Settings", "de": "Erweiterte Eigenschaften", "ru": "Допольнительные свойтва"},
-    "FFMPEG Command Line - Snapshot:": {"en": "FFMPEG Kommandozeile - Snapshot:", "de": "FFMPEG Command Line - Einzelbild:", "ru": "FFMPEG Command Line - Snapshot:"},
-    "FFMPEG Command Line - Stream:": {"en": "FFMPEG Command Line - Livestream:", "de": "FFMPEG Kommandozeile - Livestream:", "ru": "FFMPEG Command Line - Livestream:"},    
-    "Devices": {"en": "Devices", "de": "Geräte", "ru": "Devices"},
-    "Properties and Services": {"en": "Properties and Services", "de": "Eigenschaften und Dienste", "ru": "Properties and Services"},
-    "A device with this name already exists. Please change the name!": {"en": "A device with this name already exists. Please change the name!", "de": "Ein Gerät mit diesem Namen existiert bereits. Bitte den Namen des Geräts ändern!", "ru": "A device with this name already exists. Please change the name!"},
+    "Invert selection":     {"en": "Invert selection",      "de": "Selektierung invertieren", "ru": "Инвертировать выделение"}
 };

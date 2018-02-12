@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var yahka_homekit_ipcamera_1 = require("./yahka.homekit-ipcamera");
+
 var hkBridge = require("./yahka.homekit-bridge");
 var yahka_function_factory_1 = require("./yahka.function-factory");
 function isCustomCharacteristicConfig(config) {
@@ -15,7 +14,7 @@ var TIOBrokerAdapter = (function () {
         this.controllerPath = controllerPath;
         this.stateToEventMap = new Map();
         this.objectToEventMap = new Map();
-        this.devices = [];
+        this.bridge = undefined;
         this.verboseHAPLogging = false;
         adapter.on('ready', this.adapterReady.bind(this));
         adapter.on('objectChange', this.handleObjectChange.bind(this));
@@ -26,11 +25,8 @@ var TIOBrokerAdapter = (function () {
     TIOBrokerAdapter.prototype.adapterReady = function () {
         hkBridge.initHAP(this.controllerPath + '/' + this.adapter.systemConfig.dataDir + this.adapter.name + '.' + this.adapter.instance + '.hapdata', this.handleHAPLogEvent.bind(this));
         this.adapter.log.info('adapter ready, checking config');
+        var saveAdapterConfig = false;
         var config = this.adapter.config;
-        this.createHomeKitBridges(config);
-        this.createCameraDevices(config);
-    };
-    TIOBrokerAdapter.prototype.createHomeKitBridges = function (config) {
         var bridgeConfig = config.bridge;
         if (!config.firstTimeInitialized) {
             this.adapter.log.info('first time initialization');
@@ -54,18 +50,8 @@ var TIOBrokerAdapter = (function () {
             this.adapter.extendForeignObject('system.adapter.' + this.adapter.name + '.' + this.adapter.instance, { native: config }, undefined);
         }
         this.verboseHAPLogging = bridgeConfig.verboseLogging == true;
-        this.adapter.log.debug('creating bridge');
-        this.devices.push(new hkBridge.THomeKitBridge(config.bridge, this, this.adapter.log));
-    };
-    TIOBrokerAdapter.prototype.createCameraDevices = function (config) {
-        var cameraArray = config.cameras;
-        if (cameraArray === undefined)
-            return;
-        for (var _i = 0, cameraArray_1 = cameraArray; _i < cameraArray_1.length; _i++) {
-            var cameraConfig = cameraArray_1[_i];
-            this.adapter.log.debug('creating camera');
-            this.devices.push(new yahka_homekit_ipcamera_1.THomeKitIPCamera(cameraConfig, this.adapter.log));
-        }
+        this.adapter.log.info('creating bridge');
+        this.bridge = new hkBridge.THomeKitBridge(config.bridge, this, this.adapter.log);
     };
     TIOBrokerAdapter.prototype.handleHAPLogEvent = function (message) {
         if (this.verboseHAPLogging)
@@ -107,7 +93,7 @@ var TIOBrokerAdapter = (function () {
             return;
         var _loop_1 = function (subscriptionRequest) {
             var changeInterceptor = function (ioValue) { return subscriptionRequest.subscriptionEvent(ioValue, changeNotify); };
-            if (subscriptionRequest.subscriptionType === 'state') {
+            if (subscriptionRequest.subscriptionType == 'state') {
                 var existingArray = this_1.stateToEventMap.get(subscriptionRequest.subscriptionIdentifier);
                 if (!existingArray) {
                     existingArray = [changeInterceptor];

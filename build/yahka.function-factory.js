@@ -9,7 +9,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
 var yahka_homekit_bridge_1 = require("./yahka.homekit-bridge");
 var TIoBrokerInOutFunction_State = (function () {
     function TIoBrokerInOutFunction_State(adapter, stateName, deferredTime) {
@@ -44,20 +43,19 @@ var TIoBrokerInOutFunction_State = (function () {
     TIoBrokerInOutFunction_State.prototype.toIOBroker = function (plainIoValue, callback) {
         var _this = this;
         this.adapter.log.debug('writing state to ioBroker [' + this.stateName + ']: ' + JSON.stringify(plainIoValue));
-        this.adapter.getForeignState(this.stateName, function (error, ioState) {
-            var value = _this.getValueOnRead(ioState);
-            var valueChanged = value !== plainIoValue;
-            _this.adapter.log.debug('checking value change: ' + JSON.stringify(value) + ' != ' + JSON.stringify(plainIoValue) + ' = ' + valueChanged);
-            if (valueChanged) {
-                _this.adapter.setForeignState(_this.stateName, plainIoValue, false, function (error) {
-                    if (error)
-                        _this.adapter.log.error('setForeignState error [' + _this.stateName + '] to [' + JSON.stringify(plainIoValue) + ']: ' + error);
-                    callback();
-                });
-            }
-            else {
-                callback();
-            }
+
+        this.adapter.getForeignState(_this.stateName, function (error, ioState) {
+					var value = _this.getValueOnRead(ioState);
+					_this.adapter.log.debug('checking value change: ' + value + ' to ' + plainIoValue);
+					
+					// set state only, when changed (prevents setting brightness on hue lamps)
+					if (value !== plainIoValue) {
+						_this.adapter.setForeignState(_this.stateName, plainIoValue, false, function (error) {
+								if (error)
+										_this.adapter.log.error('setForeignState error [' + _this.stateName + '] to [' + JSON.stringify(plainIoValue) + ']: ' + error);
+						});
+					}
+					callback();
         });
     };
     TIoBrokerInOutFunction_State.prototype.fromIOBroker = function (callback) {
@@ -280,6 +278,34 @@ var conversionFactory = {
             toIOBroker: function (value) { return value; }
         };
     },
+    "level255": function (adapter, parameters) {
+        return {
+            toHomeKit: function (value) { 
+							var newValue = Math.round((value / 255.0) * 100.0, 0);
+							adapter.log.debug('level255: converting value to homekit: ' + value + ' to ' + newValue); 
+							return newValue; 
+						},
+            toIOBroker: function (value) { 
+							var newValue = Math.round((value / 100.0) * 255.0, 0);
+							adapter.log.debug('level255: converting value to ioBroker: ' + value + ' to ' + newValue); 
+							return newValue; 
+						}
+        };
+    },
+    "hue": function (adapter, parameters) {
+        return {
+            toHomeKit: function (value) { 
+							var newValue = Math.round((value / 65535.0) * 360.0, 0);
+							adapter.log.debug('hue: converting value to homekit: ' + value + ' to ' + newValue); 
+							return newValue; 
+						},
+            toIOBroker: function (value) { 
+							var newValue = Math.round((value / 360.0) * 65535.0, 0);
+							adapter.log.debug('hue: converting value to ioBroker: ' + value + ' to ' + newValue); 
+							return newValue; 
+						}
+        };
+    },
     "HomematicDirectionToHomekitPositionState": function (adapter, parameters) {
         return {
             toHomeKit: function (value) {
@@ -387,160 +413,6 @@ var conversionFactory = {
                 }
                 adapter.log.debug('HomematicDirectionToHomekitHeatingCoolingState.toIOBroker, from ' + JSON.stringify(value) + '[' + (typeof value) + '] to ' + JSON.stringify(result));
                 return result;
-            }
-        };
-    },
-    "level255": function (adapter, parameters) {
-        return {
-            toHomeKit: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var newValue = Math.round((num / 255.0) * 100.0);
-                adapter.log.debug('level255: converting value to homekit: ' + value + ' to ' + newValue);
-                return newValue;
-            },
-            toIOBroker: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var newValue = Math.round((num / 100.0) * 255.0);
-                adapter.log.debug('level255: converting value to ioBroker: ' + value + ' to ' + newValue);
-                return newValue;
-            }
-        };
-    },
-    "scaleInt": function (adapter, parameters) {
-        var paramArray = JSON.parse(parameters);
-        function getParameter(name) {
-            if (paramArray === undefined)
-                return undefined;
-            var value = paramArray[name];
-            if (value === undefined)
-                return undefined;
-            if (typeof value === 'number')
-                return value;
-            else
-                return parseInt(value);
-        }
-        return {
-            toHomeKit: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var homeKitMax = getParameter("homekit.max");
-                var ioBrokerMax = getParameter("iobroker.max");
-                var newValue = Math.round((num / ioBrokerMax) * homeKitMax);
-                adapter.log.debug('scaleInt: converting value to homekit: ' + value + ' to ' + newValue);
-                return newValue;
-            },
-            toIOBroker: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var homeKitMax = getParameter("homekit.max");
-                var ioBrokerMax = getParameter("iobroker.max");
-                var newValue = Math.round((num / homeKitMax) * ioBrokerMax);
-                adapter.log.debug('scaleInt: converting value to ioBroker: ' + value + ' to ' + newValue);
-                return newValue;
-            }
-        };
-    },
-    "scaleFloat": function (adapter, parameters) {
-        var paramArray = JSON.parse(parameters);
-        function getParameter(name) {
-            if (paramArray === undefined)
-                return undefined;
-            var value = paramArray[name];
-            if (value === undefined)
-                return undefined;
-            if (typeof value === 'number')
-                return value;
-            else
-                return parseFloat(value);
-        }
-        return {
-            toHomeKit: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseFloat(value);
-                else
-                    num = value;
-                var homeKitMax = getParameter("homekit.max");
-                var ioBrokerMax = getParameter("iobroker.max");
-                var newValue = (num / ioBrokerMax) * homeKitMax;
-                adapter.log.debug('scaleFloat: converting value to homekit: ' + value + ' to ' + newValue);
-                return newValue;
-            },
-            toIOBroker: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseFloat(value);
-                else
-                    num = value;
-                var homeKitMax = getParameter("homekit.max");
-                var ioBrokerMax = getParameter("iobroker.max");
-                var newValue = (num / homeKitMax) * ioBrokerMax;
-                adapter.log.debug('scaleFloat: converting value to ioBroker: ' + value + ' to ' + newValue);
-                return newValue;
-            }
-        };
-    },
-    "inverse": function (adapter, parameters) {
-        function castToNumber(value) {
-            if (value === undefined)
-                return undefined;
-            if (typeof value !== 'number')
-                return parseFloat(value);
-            else
-                return value;
-        }
-        return {
-            toHomeKit: function (value) {
-                var num = castToNumber(value);
-                var maxValue = castToNumber(parameters);
-                var newValue = maxValue - num;
-                adapter.log.debug('inverse: converting value to homekit: ' + value + ' to ' + newValue);
-                return newValue;
-            },
-            toIOBroker: function (value) {
-                var num = castToNumber(value);
-                var maxValue = castToNumber(parameters);
-                var newValue = maxValue - num;
-                adapter.log.debug('inverse: converting value to ioBroker: ' + value + ' to ' + newValue);
-                return newValue;
-            }
-        };
-    },
-    "hue": function (adapter, parameters) {
-        return {
-            toHomeKit: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var newValue = Math.round((num / 65535.0) * 360.0);
-                adapter.log.debug('hue: converting value to homekit: ' + value + ' to ' + newValue);
-                return newValue;
-            },
-            toIOBroker: function (value) {
-                var num = undefined;
-                if (typeof value !== 'number')
-                    num = parseInt(value);
-                else
-                    num = value;
-                var newValue = Math.round((num / 360.0) * 65535.0);
-                adapter.log.debug('hue: converting value to ioBroker: ' + value + ' to ' + newValue);
-                return newValue;
             }
         };
     }
